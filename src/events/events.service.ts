@@ -1,36 +1,56 @@
 import { Injectable } from '@nestjs/common';
-import { CreateEventDto } from './dto/create-event.dto';
-import { UpdateEventDto } from './dto/update-event.dto';
-import { Event } from './interfaces/event.interface';
+import { Event, Prisma } from '@prisma/client';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class EventsService {
-  create(createEventDto: CreateEventDto) {
-    return 'This action adds a new event';
+  constructor(private prisma: PrismaService) {}
+
+  async event(
+    eventWhereUniqueInput: Prisma.EventWhereUniqueInput,
+  ): Promise<Event | null> {
+    return this.prisma.event.findUnique({
+      where: eventWhereUniqueInput,
+    });
   }
 
-  findAll(): string {
-    return JSON.stringify([
-      {
-        location: 'a',
-        description: 'Event A',
-      },
-      {
-        location: 'b',
-        description: ' Event B',
-      },
-    ]);
+  async events(params: {
+    skip?: number;
+    take?: number;
+    cursor?: Prisma.EventWhereUniqueInput;
+    where?: Prisma.EventWhereInput;
+    orderBy?: Prisma.EventOrderByWithRelationInput;
+  }): Promise<Event[]> {
+    const { skip, take, cursor, where, orderBy } = params;
+    return this.prisma.event.findMany({
+      skip,
+      take,
+      cursor,
+      where,
+      orderBy,
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} event`;
+  async createEvent(data: Prisma.EventCreateInput): Promise<Event> {
+    return this.prisma.event.create({
+      data,
+    });
   }
 
-  update(id: number, updateEventDto: UpdateEventDto) {
-    return `This action updates a #${id} event`;
+  async updateEvent(params: {
+    where: Prisma.EventWhereUniqueInput;
+    data: Prisma.EventUpdateInput;
+  }): Promise<Event> {
+    const { where, data } = params;
+    return this.prisma.event.update({
+      data,
+      where,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} event`;
+  async deleteEvent(where: Prisma.EventWhereUniqueInput): Promise<Event> {
+    return this.prisma.event.delete({
+      where,
+    });
   }
 }
